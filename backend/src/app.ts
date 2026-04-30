@@ -17,10 +17,29 @@ const pool = new Pool({
 
 // ✅ Test DB connection
 pool.connect()
-  .then(() => console.log("DB Connected ✅"))
-  .catch(err => console.error("DB Connection Error ❌:", err));
+  .then(async () => {
+    console.log("DB Connected ✅");
 
-// API
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS colleges (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        location TEXT
+      );
+    `);
+
+    await pool.query(`
+      INSERT INTO colleges (name, location)
+      VALUES 
+      ('IIT Bombay', 'Mumbai'),
+      ('NIT Trichy', 'Tamil Nadu'),
+      ('IIIT Hyderabad', 'Hyderabad')
+      ON CONFLICT DO NOTHING;
+    `);
+
+    console.log("Table ready ✅");
+  })
+  .catch(err => console.error("DB Connection Error ❌:", err));
 app.get("/colleges", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM colleges");
